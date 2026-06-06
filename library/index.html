@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Professional Library Management System with analytics, fine tracking, and reporting">
+    <title>LibraryMS Pro | Enterprise Library System</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js CDN for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <i class="fas fa-book-open" style="font-size: 50px; color: #2563eb;"></i>
+                <h2>LibraryMS Pro</h2>
+                <p>Enterprise Library Management System</p>
+            </div>
+            <div class="login-form">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="loginUsername" placeholder="Username" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="loginPassword" placeholder="Password">
+                </div>
+                <button id="loginBtn" class="login-btn">Login <i class="fas fa-arrow-right"></i></button>
+                <div class="demo-credentials">
+                    <small>Demo: <strong>admin</strong> / <strong>admin123</strong></small><br>
+                    <small>Staff: <strong>librarian</strong> / <strong>lib123</strong></small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App (hidden until login) -->
+    <div id="mainApp" style="display: none;">
+        <!-- Top Navigation Bar -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <i class="fas fa-book-open"></i>
+                <span>LibraryMS Pro</span>
+            </div>
+            <div class="nav-controls">
+                <button id="darkModeToggle" class="nav-btn"><i class="fas fa-moon"></i></button>
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="currentUserDisplay">Admin</span>
+                </div>
+                <button id="logoutBtn" class="nav-btn logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </nav>
+
+        <div class="app-container">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-menu">
+                    <button class="menu-btn active" data-tab="dashboard">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </button>
+                    <button class="menu-btn" data-tab="books">
+                        <i class="fas fa-book"></i> Books
+                    </button>
+                    <button class="menu-btn" data-tab="borrow">
+                        <i class="fas fa-hand-holding-heart"></i> Borrow/Return
+                    </button>
+                    <button class="menu-btn" data-tab="fines">
+                        <i class="fas fa-money-bill-wave"></i> Fine Management
+                    </button>
+                    <button class="menu-btn" data-tab="reports">
+                        <i class="fas fa-chart-bar"></i> Reports
+                    </button>
+                    <button class="menu-btn" data-tab="settings">
+                        <i class="fas fa-cog"></i> Settings
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- DASHBOARD TAB -->
+                <div id="dashboardTab" class="tab-content active">
+                    <h1><i class="fas fa-chart-line"></i> Dashboard</h1>
+                    
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <i class="fas fa-book"></i>
+                            <div class="stat-info">
+                                <h3 id="totalBooksStat">0</h3>
+                                <p>Total Books</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-hand-holding-heart"></i>
+                            <div class="stat-info">
+                                <h3 id="borrowedBooksStat">0</h3>
+                                <p>Currently Borrowed</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-clock"></i>
+                            <div class="stat-info">
+                                <h3 id="lateBooksStat">0</h3>
+                                <p>Late Returns</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-dollar-sign"></i>
+                            <div class="stat-info">
+                                <h3 id="totalFinesStat">₦0</h3>
+                                <p>Unpaid Fines</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3>Borrowing Trends (Last 7 Days)</h3>
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Most Popular Books</h3>
+                            <canvas id="popularChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="activity-card">
+                        <h3><i class="fas fa-history"></i> Recent Activity</h3>
+                        <div id="recentActivity" class="activity-list"></div>
+                    </div>
+                </div>
+
+                <!-- BOOKS TAB -->
+                <div id="booksTab" class="tab-content">
+                    <h1><i class="fas fa-book"></i> Book Management</h1>
+                    
+                    <!-- Add Book Form -->
+                    <div class="card">
+                        <h2>➕ Add New Book</h2>
+                        <div class="form-row">
+                            <input type="text" id="bookTitle" placeholder="Book Title" autocomplete="off">
+                            <input type="text" id="bookAuthor" placeholder="Author">
+                            <select id="bookCategory">
+                                <option value="Fiction">Fiction</option>
+                                <option value="Non-Fiction">Non-Fiction</option>
+                                <option value="Technical">Technical</option>
+                                <option value="Telecom">Telecom</option>
+                                <option value="Business">Business</option>
+                            </select>
+                            <button id="addBookBtn" class="btn-primary"><i class="fas fa-plus"></i> Add</button>
+                        </div>
+                    </div>
+
+                    <!-- Search & Filter -->
+                    <div class="card">
+                        <div class="search-bar">
+                            <input type="text" id="searchBooks" placeholder="Search by title, author, or borrower...">
+                            <select id="filterStatus">
+                                <option value="all">All Books</option>
+                                <option value="available">Available</option>
+                                <option value="borrowed">Borrowed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- All Books Table -->
+                    <div class="card">
+                        <h2>📚 Library Inventory</h2>
+                        <div class="table-responsive">
+                            <table id="allBooksTable">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Author</th>
+                                        <th>Category</th>
+                                        <th>Status</th>
+                                        <th>Borrower</th>
+                                        <th>Due Date</th>
+                                        <th>Fine</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="allBooksBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BORROW/RETURN TAB -->
+                <div id="borrowTab" class="tab-content">
+                    <h1><i class="fas fa-hand-holding-heart"></i> Borrow & Return</h1>
+                    
+                    <div class="two-columns">
+                        <!-- Borrow Section -->
+                        <div class="card">
+                            <h2>📖 Borrow Book</h2>
+                            <div class="form-group">
+                                <label>Select Book:</label>
+                                <select id="borrowSelect" class="full-width">
+                                    <option value="">-- Select a book to borrow --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Borrower Name:</label>
+                                <input type="text" id="borrowerName" placeholder="Full name">
+                            </div>
+                            <div class="form-group">
+                                <label>Due Date (optional, defaults to 7 days):</label>
+                                <input type="date" id="customDueDate">
+                            </div>
+                            <button id="borrowBtn" class="btn-primary full-width"><i class="fas fa-book-open"></i> Borrow Book</button>
+                        </div>
+
+                        <!-- Return Section -->
+                        <div class="card">
+                            <h2>🔄 Return Book</h2>
+                            <div class="form-group">
+                                <label>Select Borrowed Book:</label>
+                                <select id="returnSelect" class="full-width">
+                                    <option value="">-- Select a book to return --</option>
+                                </select>
+                            </div>
+                            <button id="returnBtn" class="btn-success full-width"><i class="fas fa-undo-alt"></i> Return & Calculate Fine</button>
+                        </div>
+                    </div>
+
+                    <!-- Extend Borrow Period (Admin) -->
+                    <div class="card" id="extendSection">
+                        <h2>⏰ Extend Borrow Period</h2>
+                        <div class="form-row">
+                            <select id="extendSelect" style="flex: 2">
+                                <option value="">-- Select borrowed book --</option>
+                            </select>
+                            <input type="number" id="extendDays" placeholder="Extra days" min="1" max="14">
+                            <button id="extendBtn"><i class="fas fa-calendar-plus"></i> Extend</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FINE MANAGEMENT TAB -->
+                <div id="finesTab" class="tab-content">
+                    <h1><i class="fas fa-money-bill-wave"></i> Fine Management</h1>
+                    
+                    <div class="card">
+                        <h2>💰 Unpaid Fines</h2>
+                        <div class="table-responsive">
+                            <table id="finesTable">
+                                <thead>
+                                    <tr>
+                                        <th>Book Title</th>
+                                        <th>Borrower</th>
+                                        <th>Fine Amount</th>
+                                        <th>Days Late</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="finesTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>📜 Payment History</h2>
+                        <div id="paymentHistory" class="history-list"></div>
+                    </div>
+                </div>
+
+                <!-- REPORTS TAB -->
+                <div id="reportsTab" class="tab-content">
+                    <h1><i class="fas fa-chart-bar"></i> Reports & Export</h1>
+                    
+                    <div class="card">
+                        <h2>📊 Financial Report</h2>
+                        <div id="financialReport"></div>
+                        <div class="button-group">
+                            <button id="exportCSVBtn" class="btn-primary"><i class="fas fa-file-csv"></i> Export to CSV</button>
+                            <button id="exportJSONBtn" class="btn-primary"><i class="fas fa-code"></i> Export to JSON</button>
+                            <button id="printReportBtn" class="btn-primary"><i class="fas fa-print"></i> Print Report</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>📈 Performance Metrics</h2>
+                        <div id="performanceMetrics"></div>
+                    </div>
+                </div>
+
+                <!-- SETTINGS TAB -->
+                <div id="settingsTab" class="tab-content">
+                    <h1><i class="fas fa-cog"></i> Settings</h1>
+                    
+                    <div class="card">
+                        <h2>⚙️ System Configuration</h2>
+                        <div class="settings-group">
+                            <label>Fine per day (₦):</label>
+                            <input type="number" id="finePerDay" value="100" min="0" max="1000">
+                            <button id="updateFineBtn">Update Fine Rate</button>
+                        </div>
+                        <div class="settings-group">
+                            <label>Free borrowing days:</label>
+                            <input type="number" id="freeDays" value="7" min="0" max="30">
+                            <button id="updateFreeDaysBtn">Update</button>
+                        </div>
+                        <div class="settings-group">
+                            <label>Data retention (days):</label>
+                            <input type="number" id="retentionDays" value="365" min="30" max="1095">
+                            <button id="clearOldDataBtn">Clear Old Records</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>💾 Backup & Restore</h2>
+                        <button id="backupDataBtn" class="btn-primary"><i class="fas fa-download"></i> Download Backup</button>
+                        <input type="file" id="restoreFile" accept=".json" style="margin-top: 10px;">
+                        <button id="restoreDataBtn" class="btn-secondary">Restore from Backup</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div id="toastContainer"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
